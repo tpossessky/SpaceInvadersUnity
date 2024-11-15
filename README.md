@@ -82,3 +82,70 @@ Once a collision occurs, the projectile determines which of these events should 
     }
 ```
 
+The SpaceInvaders.cs class acts as an overall game manager and then determines what to do with the fact that a certain collision happened.  
+
+```
+    public void onPlayerHit(GameObject gameObj) {
+        lives--;
+        playerController.PlayerDeath();
+        if (lives > 0) {
+            isPlayerDeathTimerRunning = true;
+            uiManager.removeLife();
+        }
+        else {
+            gameOver();
+        }
+    }
+    public void onEnemyHit(GameObject gameObj) {
+        gameObj.GetComponent<Enemy>().onDeath();
+        score += 100; 
+        uiManager.setScore(score);
+    }
+    public void onShieldHit(GameObject gameObj) {
+        gameObj.GetComponent<Shield>().TakeDamage();
+    }
+    public void onMothershipHit(GameObject gameObj) {
+        gameObj.GetComponent<Mothership>();
+        score += 300; 
+        uiManager.setScore(score);
+    }
+```
+## GameManager (SpaceInvaders.cs)
+
+This class grew in scope to be much larger than was originally intended and I found myself throughout this development wanting to refactor it into a few different classes but ended up deciding against it due to the overall small scope of this project. The GameManager is responsible for: 
+
+- Moving the enemy grid
+- Telling the UI what to display
+- Collision handling
+- Starting the game
+- Checking for game over cases
+- Loading the next level when all enemies were defeated.
+- Communicating to save/load high scores
+
+I'll take the urge to refactor this as learnings for going forward and keeping in line with the standard programming doctrine of separation of concerns across classes. 
+
+## Saving High Scores 
+
+I added a rudimentary save system that will keep the top 5 high scores of all time similar to how an arcade machine would. The data model for a game like this was extremely simple: 
+
+```
+[Serializable]
+public class HighScore {
+    public int score;
+    public string playerInitials;
+
+    public HighScore(int sc, string inits) {
+        score = sc;
+        playerInitials = inits;
+    }
+}
+```
+When saving, I serialize this class into JSON for easy decoding. I figured even though not necessary for something as simple as a String and Int value, it would be good practice to learn for later, more complex projects.
+
+## What I Would Have Done Differently
+
+- I think the biggest thing I noticed was it would have been nice to have a centralized CollisionController class. Centralizing this I could've communicated collisions much easier to the game manager and it would've helped keep the code cleaner. 
+- Event/Action bus. Another thing that would've helped is centralizing the communication between components. I imagine for more complex games with more concurrency, queuing events would be necessary to ensure the desired order of execution is maintained.
+
+## Conclusion
+Overall, I'm still happy with how this came out and I think it represents the original game fairly well.
